@@ -6,11 +6,21 @@
   function init(){
     console.log("start");
     
-    var btn = document.getElementById("btn");
-    btn.addEventListener("click",function(){
+    var leftbtn = document.getElementById("leftbtn");
+    leftbtn.addEventListener("click",function(){
       console.log("btn click");
       send("http://lantern.local:3001/left/");
-    })
+    });
+    var rightbtn = document.getElementById("rightbtn");
+    rightbtn.addEventListener("click",function(){
+      console.log("btn click");
+      send("http://lantern.local:3001/right/");
+    });
+    var autobtn = document.getElementById("autobtn");
+    autobtn.addEventListener("click",function(){
+      console.log("btn click");
+      send("http://lantern.local:3001/auto/");
+    });
   }
   
   function send(url){
