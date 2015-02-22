@@ -3626,7 +3626,8 @@ sensible.node.Server.prototype.onHTTPRequest = function (inRequest, outResponse,
 						200,
 						{
 							"Content-Type" : "application/json",
-							"Content-Length" : json.length
+							"Content-Length" : json.length,
+							"Access-Control-Allow-Origin" : "*"
 						}
 					);
 					console.log("outResponse.writeHead");
