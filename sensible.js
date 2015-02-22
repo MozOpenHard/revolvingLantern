@@ -72,8 +72,9 @@ if (typeof (require) == "function")
 var lantern = new Object();
 
 lantern.tetrisCmd = null;
+lantern.mode = "play";
 
-lantern.left = function(){
+lantern.left = function(inRequest, inDelegate, inCallback){
   console.log("get left command");
   lantern.tetrisCmd = "left";
   console.log(lantern.tetrisCmd);
@@ -85,7 +86,8 @@ lantern.left = function(){
   
   inCallback (response);
 };
-lantern.right = function(){
+
+lantern.right = function(inRequest, inDelegate, inCallback){
   console.log("get right command");
   lantern.tetrisCmd = "right";
   
@@ -96,10 +98,15 @@ lantern.right = function(){
   
   inCallback (response);
 };
-lantern.auto = function(){
+
+lantern.auto = function(inRequest, inDelegate, inCallback){
   console.log("get auto command");
   lantern.tetrisCmd = "auto";
-  
+  if(lantern.mode=="play"){
+    lantern.mode = "auto";
+  }else if(lantern.mode == "auto"){
+    lantern.mode = "play";
+  }
   var response = new Object();
   response.type = "json";
   response.object = {result:"success"};
@@ -107,6 +114,18 @@ lantern.auto = function(){
   
   inCallback (response);
 };
+
+lantern.checkMode = function(inRequest, inDelegate, inCallback){
+  console.log("get check mode command");
+  
+  var response = new Object();
+  response.type = "json";
+  response.object = {mode:lantern.mode};
+  console.log(JSON.stringify(response.object));
+  
+  inCallback (response);
+};
+
 lantern.checkRotation = function(inRequest, inDelegate, inCallback){
   console.log("checkRotation");
   lantern.shell("/etc/www/revolvingLantern/checkRotation.sh /dev/ttyS0",inCallback);
@@ -117,6 +136,7 @@ lantern.action = {
   "left":lantern.left,
   "right":lantern.right,
   "auto":lantern.auto,
+  "checkmode":lantern.checkMode,
   "checkrotation":lantern.checkRotation
 };
 lantern.shell = function(cmd,inCallback){
