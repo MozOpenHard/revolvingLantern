@@ -71,38 +71,61 @@ if (typeof (require) == "function")
 //---naokis modify for lantern demo 
 var lantern = new Object();
 
+lantern.tetrisCmd = null;
+lantern.mode = "play";
 
-
-/*
-lantern.action = function(command){
-	console.log("lantern.action");
-	switch(command){
-	  case "left":
-	    console.log("left");
-	    lantern.left();
-	    break;
-	  case "right":
-	    console.log("right");
-	    lantern.right();
-	    break;
-	  case "checkrotation":
-	    console.log("checkRootation");
-	    var res = lantern.shell("/etc/www/revolvingLantern/checkRotation.sh /dev/ttyS0");
-	    break;
-	  default:
-	    break;
-	}
-	console.log("lantern.action res=" + res);
-	return res;
-}
-*/
-lantern.left = function(){
-  console.log("get left command  2");
-  lantern.shell();
+lantern.left = function(inRequest, inDelegate, inCallback){
+  console.log("get left command");
+  lantern.tetrisCmd = "left";
+  console.log(lantern.tetrisCmd);
+  
+  var response = new Object();
+  response.type = "json";
+  response.object = {result:"success"};
+  console.log(JSON.stringify(response.object));
+  
+  inCallback (response);
 };
-lantern.right = function(){
+
+lantern.right = function(inRequest, inDelegate, inCallback){
   console.log("get right command");
+  lantern.tetrisCmd = "right";
+  
+  var response = new Object();
+  response.type = "json";
+  response.object = {result:"success"};
+  console.log(JSON.stringify(response.object));
+  
+  inCallback (response);
 };
+
+lantern.auto = function(inRequest, inDelegate, inCallback){
+  console.log("get auto command");
+  lantern.tetrisCmd = "auto";
+  if(lantern.mode=="play"){
+    lantern.mode = "auto";
+  }else if(lantern.mode == "auto"){
+    lantern.mode = "play";
+  }
+  var response = new Object();
+  response.type = "json";
+  response.object = {result:"success"};
+  console.log(JSON.stringify(response.object));
+  
+  inCallback (response);
+};
+
+lantern.checkMode = function(inRequest, inDelegate, inCallback){
+  console.log("get check mode command");
+  
+  var response = new Object();
+  response.type = "json";
+  response.object = {mode:lantern.mode};
+  console.log(JSON.stringify(response.object));
+  
+  inCallback (response);
+};
+
 lantern.checkRotation = function(inRequest, inDelegate, inCallback){
   console.log("checkRotation");
   lantern.shell("/etc/www/revolvingLantern/checkRotation.sh /dev/ttyS0",inCallback);
@@ -112,6 +135,8 @@ lantern.checkRotation = function(inRequest, inDelegate, inCallback){
 lantern.action = {
   "left":lantern.left,
   "right":lantern.right,
+  "auto":lantern.auto,
+  "checkmode":lantern.checkMode,
   "checkrotation":lantern.checkRotation
 };
 lantern.shell = function(cmd,inCallback){
@@ -126,7 +151,9 @@ lantern.shell = function(cmd,inCallback){
       
       var response = new Object();
       response.type = "json";
-      response.object = {res:stdout};
+      response.object = {cmd:lantern.tetrisCmd,rotation:stdout};
+      console.log(JSON.stringify(response.object));
+      lantern.tetrisCmd = null;
       
       inCallback (response);
       
@@ -139,24 +166,11 @@ lantern.shell = function(cmd,inCallback){
       
       var response = new Object();
       response.type = "json";
-      response.object = {"res":"error"};
+      response.object = {cmd:"error"};
       inCallback (response);
     }
   });
 
-/*
-
-  var spawn = require('child_process').spawn;
-  var sh = spawn(cmd,[option]);
-  
-  sh.stdout.on('data',function(data){
-    console.log("stdout:"+data);
-    var response = new Object();
-    response.type = "json";
-    response.object = {res:data};
-    inCallback (response);  
-  });
-*/
       
 };
 
@@ -2180,21 +2194,15 @@ sensible.RESTDispatcher.dispatchRequest = function (inRequest, inDelegate, inCal
 {
 	var	sync = true;
 	var	response = new Object ();
-	
 	var	pathElements = inRequest.url.pathname.toLowerCase ().split ("/");
-	console.log("naokis "+inRequest.url.pathname.toLowerCase ());
-	console.log("naokis "+ pathElements.length);
-	
-	var command = pathElements[1];
-	console.log("commend" + command + ";" + lantern.action[command]);
-	if(lantern.action[command]){
-		console.log("lantern.action");
-		lantern.action[command](inRequest, inDelegate, inCallback);
+
+	if(lantern.action[pathElements[1]]){
+		console.log("lantern.action" +pathElements[1]);
+		lantern.action[pathElements[1]](inRequest, inDelegate, inCallback);
 	}else{
 	
 		if (pathElements.length == 1 && pathElements [0].length > 0)
 		{
-			console.log("naokis (pathElements.length == 1 && pathElements [0].length > 0)");
 			// requesting something with no initial slash
 			response.type = "file";
 			response.path = pathElements [0];
@@ -2204,7 +2212,6 @@ sensible.RESTDispatcher.dispatchRequest = function (inRequest, inDelegate, inCal
 		else
 		if (pathElements.length <= 2)
 		{
-			console.log("naokis (pathElements.length <= 2)");
 			// likely, we will get 2 path elements for "/"
 			if (pathElements [1].length == 0)
 			{
@@ -2222,23 +2229,7 @@ sensible.RESTDispatcher.dispatchRequest = function (inRequest, inDelegate, inCal
 		}
 		else
 		{
-			console.log("naokis else" + pathElements[1]);
 			
-			//-- naokis modify
-			/*
-			var command = pathElements[1];
-			if(lantern.action[command]){
-			}
-			var responseText = lantern.action(command);
-			console.log("naokis response"+ responseText);
-			if(responseText){
-				console.log("if naokis response"+ responseText);
-				response.type = "json";
-				response.object = {"res":responseText};
-				inCallback (response);
-			}
-			*/
-			//-- naokis modify
 			
 			var	controller = pathElements [1].toLowerCase ();
 			var	action = pathElements [2].toLowerCase ();
@@ -3586,7 +3577,7 @@ sensible.node.Server.prototype.stop = function ()
 sensible.node.Server.prototype.onHTTPRequest = function (inRequest, outResponse, inRequestURL, inRequestParams)
 {
 	console.log (inRequest.socket.remoteAddress + ":" + inRequest.socket.remotePort + ":" + inRequest.url);
-
+	//naokis
 	try
 	{
 		// map the node request to a regular parsed-anchor one
@@ -3611,16 +3602,13 @@ sensible.node.Server.prototype.onHTTPRequest = function (inRequest, outResponse,
 			{
 				if (inResponse.type == "json")
 				{
-					console.log("naokis response type json");
 					var	json = JSON.stringify (inResponse.object);
-					console.log("naokis jsonpCallback" + json);
 					var	jsonpCallback = inRequestParams.callback;
-					console.log("naokis jsonpCallback2");
 					if (jsonpCallback && jsonpCallback.length)
 					{
 						json = jsonpCallback + "(" + json + ")";
 					}
-					console.log("naokis if");
+					
 					outResponse.writeHead
 					(
 						200,
@@ -3630,7 +3618,6 @@ sensible.node.Server.prototype.onHTTPRequest = function (inRequest, outResponse,
 							"Access-Control-Allow-Origin" : "*"
 						}
 					);
-					console.log("outResponse.writeHead");
 					outResponse.write (json);
 					outResponse.end ();
 					console.log("write");
@@ -3642,6 +3629,7 @@ sensible.node.Server.prototype.onHTTPRequest = function (inRequest, outResponse,
 					var	path = "web/" + inResponse.path;
 					
 					self.sendFile (path, outResponse);
+					outResponse.end ();
 				}
 				else
 				if (inResponse.type == "error")
@@ -3662,6 +3650,7 @@ sensible.node.Server.prototype.onHTTPRequest = function (inRequest, outResponse,
 				else
 				{
 					console.error ("sensible.node.Server can't deal with response type " + inResponse.type);
+					outResponse.end ();
 				}
 			}
 		);
@@ -3679,6 +3668,8 @@ sensible.node.Server.prototype.onHTTPRequest = function (inRequest, outResponse,
 			},
 			inError.message
 		);
+		
+		outResponse.end ();
 	}
 	
 	//outResponse.end ();

@@ -28,7 +28,6 @@ sensible.ApplicationFactory.createApplication
 		else
 		{
 			console.log ("sensible application startup");
-			console.log(url.Url);
 		}
 	}
 );

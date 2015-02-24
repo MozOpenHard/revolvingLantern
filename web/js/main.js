@@ -8,3 +8,4 @@ $(document).ready(function(){
     $.post("http://lantern.local:3001/right");
   });
 })
+
