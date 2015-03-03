@@ -76,29 +76,52 @@ lantern.mode = "play";
 
 lantern.left = function(inRequest, inDelegate, inCallback){
   console.log("get left command");
-  lantern.tetrisCmd = "left";
-  console.log(lantern.tetrisCmd);
+  //lantern.tetrisCmd = "left";
+  //console.log(lantern.tetrisCmd);
   
+  lantern.shell("echo 1 > /dev/ttyS0",inCallback);
+  /*
   var response = new Object();
   response.type = "json";
   response.object = {result:"success"};
   console.log(JSON.stringify(response.object));
   
   inCallback (response);
+  */
 };
 
 lantern.right = function(inRequest, inDelegate, inCallback){
   console.log("get right command");
-  lantern.tetrisCmd = "right";
+  //lantern.tetrisCmd = "right";
   
+  lantern.shell("echo 2 > /dev/ttyS0",inCallback);
+  /*
   var response = new Object();
   response.type = "json";
   response.object = {result:"success"};
   console.log(JSON.stringify(response.object));
   
   inCallback (response);
+  */
 };
-
+lantern.stop = function(inRequest, inDelegate, inCallback){
+  console.log("get right command");
+  lantern.tetrisCmd = "stop";
+  
+  lantern.shell("echo 3 > /dev/ttyS0",inCallback);
+  /*
+  var response = new Object();
+  response.type = "json";
+  response.object = {result:"success"};
+  console.log(JSON.stringify(response.object));
+  
+  inCallback (response);
+  */
+};
+lantern.start = function(inRequest, inDelegate, inCallback){
+  console.log("start");
+  lantern.shell("echo 1 > /dev/ttyS0",inCallback);
+}
 lantern.auto = function(inRequest, inDelegate, inCallback){
   console.log("get auto command");
   lantern.tetrisCmd = "auto";
@@ -107,12 +130,15 @@ lantern.auto = function(inRequest, inDelegate, inCallback){
   }else if(lantern.mode == "auto"){
     lantern.mode = "play";
   }
+  lantern.shell("echo 3 > /dev/ttyS0",inCallback);
+  /*
   var response = new Object();
   response.type = "json";
   response.object = {result:"success"};
   console.log(JSON.stringify(response.object));
   
   inCallback (response);
+  */
 };
 
 lantern.checkMode = function(inRequest, inDelegate, inCallback){
@@ -135,6 +161,8 @@ lantern.checkRotation = function(inRequest, inDelegate, inCallback){
 lantern.action = {
   "left":lantern.left,
   "right":lantern.right,
+  "stop":lantern.stop,
+  "start":lantern.start,
   "auto":lantern.auto,
   "checkmode":lantern.checkMode,
   "checkrotation":lantern.checkRotation
